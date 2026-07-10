@@ -56,20 +56,17 @@ function Get-LatestNightlyFromHtml() {
     $html = (Invoke-WebRequest -Uri "https://github.com/brave/brave-browser/releases" -UseBasicParsing -Headers @{ "User-Agent" = "BraveNightlyPortable-Updater" }).Content
     foreach ($m in [regex]::Matches($html, "Nightly v(\d+\.\d+\.\d+)")) {
         $ver = $m.Groups[1].Value
-        $asset = "brave-v$ver-win32-x64.zip"
-        if ($html -match [regex]::Escape($asset)) {
-            return [PSCustomObject]@{
-                Version = $ver
-                AssetName = $asset
-                Url = "https://github.com/brave/brave-browser/releases/download/v$ver/$asset"
-            }
+        return [PSCustomObject]@{
+            Version = $ver
+            AssetName = "brave-v$ver-win32-x64.zip"
+            Url = "https://github.com/brave/brave-browser/releases/download/v$ver/brave-v$ver-win32-x64.zip"
         }
     }
     return $null
 }
 
 if (-not (Test-Path $BraveExe)) {
-    Write-Log "First run — downloading official Brave Nightly from GitHub..."
+    Write-Log "First run - downloading official Brave Nightly from GitHub..."
     New-Item -ItemType Directory -Path $BraveDir -Force | Out-Null
 }
 

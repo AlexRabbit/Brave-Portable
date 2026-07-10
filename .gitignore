@@ -1,26 +1,18 @@
-# Build / local dev artifacts
+# Build / local dev
 tools/
-downloads/
-_template/
-_pal/
-_launcher/
 wrapper/bin/
 wrapper/obj/
 wrapper/out/
 
-# Generated at runtime (never publish)
-BraveNightlyPortable/Data/
-BraveNightlyPortable/App/Brave/*
-!BraveNightlyPortable/App/Brave/README.txt
+# Runtime (created on first launch)
+Data/
+App/Brave/*
+!App/Brave/README.txt
 
-# Built wrapper — download from GitHub Releases or run build.ps1
-BraveNightlyPortable/BraveNightlyPortable-AlexRabbit.exe
-
-# OS junk
+# OS
 Thumbs.db
 desktop.ini
 *.log
 
-# IDE
-.vs/
-*.user
+# Wrapper rebuilt by build.ps1 or GitHub Actions (~1 MB, fits in git)
+# BraveNightlyPortable-AlexRabbit.exe

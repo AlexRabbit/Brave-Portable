@@ -7,6 +7,6 @@ if (-not (Test-Path $dotnet)) {
     Invoke-WebRequest -Uri "https://dot.net/v1/dotnet-install.ps1" -OutFile "$tools\dotnet-install.ps1" -UseBasicParsing
     & "$tools\dotnet-install.ps1" -Channel 8.0 -InstallDir "$tools\dotnet" -Architecture x64
 }
-& $dotnet publish (Join-Path $root "wrapper\BraveNightlyPortable-AlexRabbit.csproj") -c Release -r win-x64 --self-contained true -o (Join-Path $root "wrapper\out")
-Copy-Item -Force (Join-Path $root "wrapper\out\BraveNightlyPortable-AlexRabbit.exe") (Join-Path $root "BraveNightlyPortable\BraveNightlyPortable-AlexRabbit.exe")
-Write-Host "Built: BraveNightlyPortable\BraveNightlyPortable-AlexRabbit.exe"
+& $dotnet publish (Join-Path $root "wrapper\BraveNightlyPortable-AlexRabbit.csproj") -c Release -r win-x64 --self-contained false -o (Join-Path $root "wrapper\out")
+Copy-Item -Force (Join-Path $root "wrapper\out\BraveNightlyPortable-AlexRabbit.exe") (Join-Path $root "BraveNightlyPortable-AlexRabbit.exe")
+Write-Host "Built: BraveNightlyPortable-AlexRabbit.exe (~1 MB, requires .NET 8 Runtime)"

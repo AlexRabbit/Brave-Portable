@@ -1,213 +1,118 @@
 # 🦁 Brave Nightly Portable
 
-> **Unofficial** portable [Brave Browser **Nightly**](https://brave.com/download-nightly/) for Windows — [PortableApps.com Format](https://portableapps.com/development/portableapps.com_format), auto-updates from **official GitHub**, profile stays on your USB/drive.
+> Unofficial portable **[Brave Browser Nightly](https://brave.com/download-nightly/)** for Windows — [PortableApps.com Format](https://portableapps.com/development/portableapps.com_format), auto-updates from **official GitHub**.
 
 ---
 
-## ⚡ Start here (3 seconds)
+## ⚡ How to open (one file only)
 
-### 👉 **Double-click `START-BRAVE-NIGHTLY.bat`** in this folder
+### 👉 Double-click **`BraveNightlyPortable-AlexRabbit.exe`**
 
-That’s it. No install. No admin. No registry junk on the host PC.
+That is the **only** file you need. No `.bat`. No install wizard.
 
 ```
 📁 Brave-Portable/
-   └── 🟢 START-BRAVE-NIGHTLY.bat   ← DOUBLE-CLICK THIS FIRST
-       └── 📁 BraveNightlyPortable/
+   ├── 🔵 BraveNightlyPortable-AlexRabbit.exe   ← DOUBLE-CLICK THIS
+   ├── 📁 App/
+   ├── 📁 Data/          (your profile — created on first run)
+   └── 📁 Other/
 ```
 
-**First launch?** The app downloads ~230 MB of **official Brave Nightly** from GitHub. Grab a coffee ☕ — it only happens once (then only small updates).
+**First launch:** downloads ~230 MB **official Brave Nightly** from GitHub (1–3 min).  
+**Every launch after:** checks for updates, then opens Brave.
 
-> **Which `.exe` should I use?**  
-> **Neither directly.** Always use **`START-BRAVE-NIGHTLY.bat`**.  
-> If you must pick an exe: **`BraveNightlyPortable-AlexRabbit.exe`** (update + launch).  
-> Never double-click **`BraveNightlyPortable-Internal.exe`** — that’s the inner PA launcher only.
-
-**Cloned from GitHub?** The first `.bat` run builds the wrapper exe via `build.ps1` (~1 min), then downloads Brave Nightly.
-
-**Already have a Release zip?** Same thing — double-click the `.bat` inside the extracted folder.
+> **Do NOT click** `App\AppInfo\Launcher\BraveNightlyPortable-Internal.exe` — that is the inner PA engine, not for users.
 
 ---
 
-## 🎬 What happens when you launch
+## 🧩 What the 64 MB vs 230 MB means
 
-```mermaid
-flowchart LR
-    A[🟢 START-BRAVE-NIGHTLY.bat] --> B[🔄 Wrapper checks GitHub]
-    B --> C{Newer Nightly?}
-    C -->|Yes| D[⬇️ Download official zip]
-    C -->|No| E[▶️ Launch]
-    D --> E
-    E --> F[🦁 Brave Nightly opens]
-    F --> G[💾 Profile saved in Data/]
-```
+| File | Size | What it is |
+|------|------|------------|
+| **`BraveNightlyPortable-AlexRabbit.exe`** | **~175 KB** | Our launcher (update + start). Needs [.NET 8 Desktop Runtime](https://dotnet.microsoft.com/download/dotnet/8.0) — usually on Win11 already |
+| **`App\Brave\brave.exe`** | **~230 MB** | Official Brave Nightly — **downloaded automatically** from GitHub, not stored in git |
 
-| Step | What it does |
-|------|----------------|
-| 1️⃣ | Checks [brave/brave-browser](https://github.com/brave/brave-browser/releases) for latest **Nightly** |
-| 2️⃣ | Downloads `brave-v*-win32-x64.zip` if needed (never the Setup.exe installer) |
-| 3️⃣ | Verifies build is **Brave Browser Nightly** (rejects stable/beta) |
-| 4️⃣ | Updates `App\Brave\` only — your **bookmarks, extensions, cookies** in `Data\profile\` are **never touched** |
-| 5️⃣ | Opens Brave with portable paths (`--user-data-dir`, disabled built-in updater) |
+The old 64 MB exe was our launcher bundled with .NET — **replaced** with a tiny ~175 KB launcher.  
+**Brave itself** always comes from official GitHub — never modified, never repackaged.
+
+---
+
+## 🎬 What happens on launch
+
+1. Checks [brave/brave-browser releases](https://github.com/brave/brave-browser/releases) for **Nightly**
+2. Downloads `brave-v*-win32-x64.zip` if missing or outdated
+3. Verifies **ProductName = Brave Browser Nightly**
+4. Launches via PA launcher with portable profile in `Data\profile\`
 
 ---
 
 ## ✅ Is this really Nightly?
 
-**Yes.** Every download is verified:
-
-| Check | Value |
-|-------|--------|
-| GitHub release name | Must contain **Nightly** |
-| Asset | `brave-vX.Y.Z-win32-x64.zip` only |
-| After download | `ProductName` = **Brave Browser Nightly** |
-
-Stable and Beta builds are **rejected** automatically.
+**Yes.** Only GitHub releases tagged **Nightly** are used. Stable/Beta are rejected.
 
 ---
 
-## 📁 Folder map
+## 📦 PortableApps.com directory — can you submit?
+
+| Question | Answer |
+|----------|--------|
+| **Works with PA Platform?** | ✅ Yes — drop this folder in `PortableApps\` |
+| **Needs `.paf` file?** | For **official directory listing**: yes — build with [PA Installer Generator](https://portableapps.com/development) |
+| **Will Brave be accepted officially?** | ⚠️ **Unlikely** — Brave is trademarked; no official PA Brave app exists |
+| **DevTest / community?** | ✅ Post in [PortableApps Development Forum](https://portableapps.com/forums/portable_app_development) with source visible |
+
+**For personal / GitHub use:** the folder format is enough. **`.paf.exe`** is only needed for PA.com’s installer/updater ecosystem.
+
+---
+
+## 📁 Folder layout (repo = portable app)
+
+The **git repo root IS the portable app** — no extra wrapper folder.
 
 ```
 Brave-Portable/
-├── 🟢 START-BRAVE-NIGHTLY.bat          ← YOU START HERE
-├── 📖 README.md
-├── 🔧 build.ps1                        ← rebuild wrapper (developers)
-├── 📁 wrapper/                         ← C# update-on-launch source
-├── 📁 .github/workflows/               ← auto-release on new Nightly
-└── 📁 BraveNightlyPortable/             ← the portable package
-    ├── 🟢 Launch Brave Nightly.bat     ← shortcut (same as .bat above)
-    ├── 🔵 BraveNightlyPortable-AlexRabbit.exe   ← wrapper (update + go)
-    ├── 🔵 BraveNightlyPortable-Internal.exe     ← PA launcher (paths/registry)
-    ├── 📁 App/
-    │   ├── Brave/                      ← browser binaries (auto-downloaded)
-    │   └── AppInfo/                    ← PortableApps.com config
-    ├── 📁 Data/                        ← YOUR profile (created on first run)
-    └── 📁 Other/Source/
-        ├── update.bat                  ← manual update
-        └── Update-BraveNightly.ps1
+├── BraveNightlyPortable-AlexRabbit.exe    ← you click this
+├── App/
+│   ├── AppInfo/          PA.c config (appinfo.ini, launcher ini)
+│   ├── Brave/            browser (auto-downloaded)
+│   └── DefaultData/
+├── Data/                 YOUR profile (gitignored)
+├── Other/Source/         update.bat (manual)
+├── wrapper/              C# source (developers)
+├── build.ps1             rebuild launcher
+└── .github/workflows/    auto-release zips
 ```
 
 ---
 
-## 🧰 Requirements
+## 🛠️ Manual update
 
-| Requirement | Details |
-|-------------|---------|
-| 🖥️ OS | Windows 10/11 **64-bit** |
-| 🌐 Network | First run + updates need internet |
-| 💾 Space | ~500 MB free (browser + profile) |
-| 🔐 Admin | **Not required** |
+```
+Other\Source\update.bat
+```
 
 ---
 
-## 🚀 Usage modes
-
-### 🟢 Normal user — just use the `.bat`
-
-```
-Double-click START-BRAVE-NIGHTLY.bat
-```
-
-Alternative inside the package folder:
-
-```
-Double-click Launch Brave Nightly.bat
-```
-
-### 🔄 Manual update only
-
-```
-BraveNightlyPortable\Other\Source\update.bat
-```
-
-### 🧩 PortableApps.com Platform
-
-Copy the entire `BraveNightlyPortable` folder into your `PortableApps\` directory. The Platform reads `App\AppInfo\appinfo.ini` automatically.
-
-### 👨‍💻 Developer — rebuild the wrapper
+## 👨‍💻 Developers — rebuild launcher
 
 ```powershell
 .\build.ps1
 ```
 
-Requires .NET 8 SDK (or the script installs a local SDK into `tools\` on first run).
-
----
-
-## 🌐 Update sources (official only)
-
-| Source | Used? | Why |
-|--------|-------|-----|
-| ✅ `github.com/brave/brave-browser/releases` | **Yes** | Official Nightly zip assets |
-| ✅ GitHub API + HTML fallback | **Yes** | Version check |
-| ❌ `laptop-updates.brave.com/.../nightly` | **No** | Returns `Setup.exe` installer — breaks portability |
-| ❌ Brave built-in updater | **Disabled** | Would install to Program Files |
+Requires .NET 8 SDK (script can install to `tools\`).
 
 ---
 
 ## 📦 GitHub Releases
 
-Automated workflow (every 6 hours + manual trigger):
-
-- Downloads latest official Nightly
-- Builds the wrapper exe
-- Publishes `BraveNightlyPortable_X.Y.Z_win64.zip`
-
-**Recommended for end users:** download the **Release zip**, extract, double-click **`START-BRAVE-NIGHTLY.bat`**.
-
----
-
-## 🔒 Privacy & portability
-
-| Data | Location |
-|------|----------|
-| Profile, bookmarks, extensions | `BraveNightlyPortable\Data\profile\` |
-| Cache | `BraveNightlyPortable\Data\cache\` |
-| Browser binaries | `BraveNightlyPortable\App\Brave\` |
-
-Move the whole folder to another PC or USB — it keeps working. Enable **Brave Sync** if you want settings across machines (Chromium encryption can be machine-bound on Windows).
+CI publishes **`BraveNightlyPortable_X.Y.Z_win64.zip`** with Brave + launcher pre-bundled.
 
 ---
 
 ## ⚠️ Disclaimer
 
-- **Unofficial** — not affiliated with Brave Software or PortableApps.com
-- **Nightly channel** — bleeding edge, may be unstable; not for production
-- **Trademarks** — Brave® is a trademark of Brave Software, Inc.
-- Browser licensed under **MPL 2.0**; wrapper code under **MIT** (see [LICENSE](LICENSE))
+Unofficial. Not affiliated with Brave Software or PortableApps.com. Nightly = bleeding edge. MPL 2.0 (Brave) / MIT (wrapper).
 
 ---
 
-## 🛠️ Troubleshooting
-
-| Problem | Fix |
-|---------|-----|
-| 🚫 “Could not find launcher” | Run `build.ps1` or download a GitHub **Release** zip |
-| 🐌 First launch slow | Normal — downloading ~230 MB Nightly from GitHub |
-| 🔄 Update fails silently | Run `Other\Source\update.bat` to see errors |
-| 🚫 Brave won’t start | Ensure `BraveNightlyPortable-Internal.exe` is in the package root |
-| 📛 Not Nightly in About | Run manual update; stable builds are blocked but old installs may remain |
-
----
-
-## 🤝 Contributing
-
-Issues and PRs welcome. For PortableApps.com submission, this follows PA.c Format 3.9 with unofficial `AppId` suffix.
-
----
-
-## 📚 Links
-
-- 🦁 [Brave Browser](https://brave.com/)
-- 🌙 [Brave Nightly downloads](https://brave.com/download-nightly/)
-- 📦 [Official GitHub releases](https://github.com/brave/brave-browser/releases)
-- 📘 [PortableApps.com Format spec](https://portableapps.com/development/portableapps.com_format)
-- 📘 [PA Launcher manual](https://portableapps.com/manuals/PortableApps.comLauncher/)
-
----
-
-<p align="center">
-  <strong>Made with 🧡 for portable privacy browsing</strong><br>
-  Double-click <code>START-BRAVE-NIGHTLY.bat</code> and go 🚀
-</p>
+<p align="center"><strong>Double-click <code>BraveNightlyPortable-AlexRabbit.exe</code> 🚀</strong></p>
