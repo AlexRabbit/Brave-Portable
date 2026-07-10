@@ -203,16 +203,47 @@ internal static class Program
         try
         {
             var html = client.GetStringAsync(GitHubReleasesPage).GetAwaiter().GetResult();
+            var seen = new HashSet<string>(StringComparer.Ordinal);
+
             foreach (Match tagMatch in Regex.Matches(html, @"Nightly v(\d+\.\d+\.\d+)", RegexOptions.IgnoreCase))
             {
                 var version = tagMatch.Groups[1].Value;
-                var assetName = $"brave-v{version}-win32-x64.zip";
-                return new ReleaseInfo(version, assetName,
-                    $"https://github.com/brave/brave-browser/releases/download/v{version}/{assetName}");
+                if (!seen.Add(version)) continue;
+                var release = TryBuildReleaseInfo(version);
+                if (release is not null && AssetDownloadExists(client, release.DownloadUrl))
+                    return release;
+            }
+
+            foreach (Match linkMatch in Regex.Matches(html,
+                         @"/brave/brave-browser/releases/download/v([\d\.]+)/(brave-v[\d\.]+-win32-x64\.zip)",
+                         RegexOptions.IgnoreCase))
+            {
+                var version = linkMatch.Groups[1].Value;
+                if (!seen.Add(version)) continue;
+                var assetName = linkMatch.Groups[2].Value;
+                var url = $"https://github.com{linkMatch.Value}";
+                if (AssetDownloadExists(client, url))
+                    return new ReleaseInfo(version, assetName, url);
             }
         }
         catch { return null; }
         return null;
+    }
+
+    private static ReleaseInfo TryBuildReleaseInfo(string version) =>
+        new(version, $"brave-v{version}-win32-x64.zip",
+            $"https://github.com/brave/brave-browser/releases/download/v{version}/brave-v{version}-win32-x64.zip");
+
+    private static bool AssetDownloadExists(HttpClient client, string url)
+    {
+        try
+        {
+            using var request = new HttpRequestMessage(HttpMethod.Head, url);
+            using var response = client.Send(request);
+            var code = (int)response.StatusCode;
+            return code is >= 200 and < 400;
+        }
+        catch { return false; }
     }
 
     private static void DownloadAndInstall(string root, string braveDir, ReleaseInfo release, SplashForm? splash)
@@ -344,6 +375,8 @@ internal static class Program
     {
         var client = new HttpClient { Timeout = TimeSpan.FromMinutes(25) };
         client.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue("BraveNightlyPortable", "1.0"));
+        client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/vnd.github+json"));
+        client.DefaultRequestHeaders.Add("X-GitHub-Api-Version", "2022-11-28");
         return client;
     }
 

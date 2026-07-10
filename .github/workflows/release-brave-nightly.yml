@@ -27,12 +27,23 @@ jobs:
         id: brave
         shell: pwsh
         run: |
-          $headers = @{ "User-Agent" = "BraveNightlyPortable-CI" }
+          $headers = @{
+            "User-Agent" = "BraveNightlyPortable-CI"
+            "Accept" = "application/vnd.github+json"
+            "X-GitHub-Api-Version" = "2022-11-28"
+          }
           $releases = Invoke-RestMethod -Uri "https://api.github.com/repos/brave/brave-browser/releases?per_page=100" -Headers $headers
-          $rel = $releases | Where-Object { $_.name -match "Nightly" } | Select-Object -First 1
-          if (-not $rel) { throw "No Nightly release found" }
-          $asset = $rel.assets | Where-Object { $_.name -match "^brave-v.*-win32-x64\.zip$" } | Select-Object -First 1
-          $version = $rel.tag_name.TrimStart("v")
+          $asset = $null
+          $version = $null
+          foreach ($rel in ($releases | Where-Object { $_.name -match "Nightly" })) {
+            $candidate = $rel.assets | Where-Object { $_.name -match "^brave-v[\d\.]+-win32-x64\.zip$" } | Select-Object -First 1
+            if ($candidate) {
+              $asset = $candidate
+              $version = $rel.tag_name.TrimStart("v")
+              break
+            }
+          }
+          if (-not $asset) { throw "No Nightly release with brave-v*-win32-x64.zip found" }
           "version=$version" >> $env:GITHUB_OUTPUT
           "asset_url=$($asset.browser_download_url)" >> $env:GITHUB_OUTPUT
 

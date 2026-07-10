@@ -36,9 +36,25 @@ function Assert-NightlyExe([string]$Path) {
     if ($name -notmatch "Nightly") { throw "Not a Nightly build: $name" }
 }
 
+function Test-AssetExists([string]$Url) {
+    try {
+        $resp = Invoke-WebRequest -Uri $Url -Method Head -UseBasicParsing
+        return $resp.StatusCode -ge 200 -and $resp.StatusCode -lt 400
+    } catch {
+        $code = $null
+        try { $code = [int]$_.Exception.Response.StatusCode } catch { }
+        return $code -ge 200 -and $code -lt 400
+    }
+}
+
 function Get-LatestNightlyFromApi() {
     $url = "https://api.github.com/repos/brave/brave-browser/releases?per_page=100"
-    $releases = Invoke-RestMethod -Uri $url -Headers @{ "User-Agent" = "BraveNightlyPortable-Updater" }
+    $headers = @{
+        "User-Agent" = "BraveNightlyPortable-Updater"
+        "Accept" = "application/vnd.github+json"
+        "X-GitHub-Api-Version" = "2022-11-28"
+    }
+    $releases = Invoke-RestMethod -Uri $url -Headers $headers
     foreach ($rel in ($releases | Where-Object { $_.name -match "Nightly" })) {
         $asset = $rel.assets | Where-Object { $_.name -match "^brave-v[\d\.]+-win32-x64\.zip$" } | Select-Object -First 1
         if ($asset) {
@@ -54,14 +70,30 @@ function Get-LatestNightlyFromApi() {
 
 function Get-LatestNightlyFromHtml() {
     $html = (Invoke-WebRequest -Uri "https://github.com/brave/brave-browser/releases" -UseBasicParsing -Headers @{ "User-Agent" = "BraveNightlyPortable-Updater" }).Content
+    $seen = @{}
+
     foreach ($m in [regex]::Matches($html, "Nightly v(\d+\.\d+\.\d+)")) {
         $ver = $m.Groups[1].Value
-        return [PSCustomObject]@{
-            Version = $ver
-            AssetName = "brave-v$ver-win32-x64.zip"
-            Url = "https://github.com/brave/brave-browser/releases/download/v$ver/brave-v$ver-win32-x64.zip"
+        if ($seen.ContainsKey($ver)) { continue }
+        $seen[$ver] = $true
+        $assetName = "brave-v$ver-win32-x64.zip"
+        $url = "https://github.com/brave/brave-browser/releases/download/v$ver/$assetName"
+        if (Test-AssetExists $url) {
+            return [PSCustomObject]@{ Version = $ver; AssetName = $assetName; Url = $url }
         }
     }
+
+    foreach ($m in [regex]::Matches($html, "/brave/brave-browser/releases/download/v([\d\.]+)/(brave-v[\d\.]+-win32-x64\.zip)")) {
+        $ver = $m.Groups[1].Value
+        if ($seen.ContainsKey($ver)) { continue }
+        $seen[$ver] = $true
+        $assetName = $m.Groups[2].Value
+        $url = "https://github.com$($m.Value)"
+        if (Test-AssetExists $url) {
+            return [PSCustomObject]@{ Version = $ver; AssetName = $assetName; Url = $url }
+        }
+    }
+
     return $null
 }
 
