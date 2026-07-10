@@ -1,4 +1,6 @@
-# 🦁 Brave Nightly Portable
+If this helped you, consider starring the repo ⭐
+
+# 🦁 Brave Nightly Portable ALWAYS UP TO DATE.
 
 > **Unofficial** portable **[Brave Browser Nightly](https://brave.com/download-nightly/)** for Windows — [PortableApps.com Format](https://portableapps.com/development/portableapps.com_format), auto-downloads from **official GitHub**, profile stays inside the folder.
 
@@ -6,26 +8,6 @@
 [![Channel](https://img.shields.io/badge/Channel-Nightly-orange.svg)](https://github.com/brave/brave-browser/releases)
 [![Format](https://img.shields.io/badge/Format-PortableApps.com-0066cc.svg)](https://portableapps.com/)
 [![Windows](https://img.shields.io/badge/Windows-10%2F11%20x64-0078D4.svg)](https://www.microsoft.com/windows)
-
----
-
-## ⚡ Start here — double-click this first
-
-```
-START-BRAVE-NIGHTLY.bat
-```
-
-**That is the entire app for normal users.**  
-Download the project → extract anywhere → **double-click `START-BRAVE-NIGHTLY.bat`**.  
-No installer. No admin. No registry changes.
-
-| Step | What you do | What happens |
-|:----:|-------------|--------------|
-| **1** | Double-click **`START-BRAVE-NIGHTLY.bat`** | A small console window checks requirements |
-| **2** | Wait (first run only) | A splash window downloads **~230 MB** official Brave Nightly from GitHub |
-| **3** | Done | Brave opens with your portable profile in `Data\profile\` |
-
-> 🧠 **Remember:** Always start with the **`.bat` file**, not `brave.exe` directly. The `.bat` checks .NET 8, then launches the smart wrapper that downloads, updates, and opens Brave correctly.
 
 ---
 
@@ -44,27 +26,16 @@ The splash **only** appears when something is being **downloaded or set up** —
 
 ## 📥 How to get this project
 
-### Option A — GitHub Release zip (recommended)
-
-1. Open **[Releases](https://github.com/AlexRabbit/Brave-Portable/releases)**
-2. Download the latest `BraveNightlyPortable_X.Y.Z_win64.zip`
-3. Extract to any folder (USB drive, `D:\Apps\`, Desktop — your choice)
-4. **Double-click `START-BRAVE-NIGHTLY.bat`**
-
-### Option B — Clone the repository
+### Clone the repository
 
 ```powershell
 git clone https://github.com/AlexRabbit/Brave-Portable.git
 cd Brave-Portable
 ```
-
-Then **double-click `START-BRAVE-NIGHTLY.bat`**.
-
-### Option C — PortableApps.com Platform
+### PortableApps.com Platform
 
 1. Install the [PortableApps.com Platform](https://portableapps.com/download)
 2. Copy this folder to `PortableApps\BraveNightlyPortable\`
-3. Launch from the PA menu — still uses the same **`START-BRAVE-NIGHTLY.bat`** chain
 
 ---
 
@@ -81,34 +52,7 @@ Then **double-click `START-BRAVE-NIGHTLY.bat`**.
 
 ---
 
-## 🗂️ Folder map — what everything is
 
-```
-Brave-Portable/
-│
-├── START-BRAVE-NIGHTLY.bat          ← 🟢 YOU START HERE (always)
-├── BraveNightlyPortable-AlexRabbit.exe   ← Smart wrapper (~1 MB, auto-download/update)
-├── BraveNightlyPortable-Internal.exe     ← PortableApps launcher engine
-│
-├── App/
-│   ├── Brave/                       ← Official Brave Nightly (empty until first run)
-│   └── AppInfo/                     ← PortableApps metadata + icons
-│
-├── Data/                            ← Created on first run — YOUR profile lives here
-│   ├── profile/                     ← Bookmarks, passwords, extensions, settings
-│   └── cache/                       ← Browser cache
-│
-├── Other/Source/
-│   ├── update.bat                   ← Manual update (if auto-update fails)
-│   └── Update-BraveNightly.ps1      ← Same logic, PowerShell
-│
-├── wrapper/                         ← C# source (developers rebuild launcher here)
-├── build.ps1                        ← Rebuild the wrapper exe
-├── docs/                            ← Advanced guides (PortableApps submission)
-└── README.md                        ← You are here
-```
-
----
 
 ## 🔒 Where Brave comes from (always official)
 
@@ -130,7 +74,6 @@ This project **does not modify** Brave binaries. It downloads, verifies, and run
 
 1. **Close Brave** completely (check system tray)
 2. Copy the **entire folder** — USB, cloud zip, external SSD, whatever you use
-3. On the new PC, **double-click `START-BRAVE-NIGHTLY.bat`**
 
 > ⚠️ Copy the **whole folder**, not just `brave.exe`.  
 > If `App\Brave\` is empty on the new PC, the launcher re-downloads Brave automatically — your **profile in `Data\` is what matters**.
@@ -141,7 +84,7 @@ This project **does not modify** Brave binaries. It downloads, verifies, and run
 
 Updates are **automatic** and **silent** on normal launch:
 
-1. You double-click **`START-BRAVE-NIGHTLY.bat`**
+1. You double-click
 2. The wrapper checks GitHub for a newer Nightly build
 3. If found → splash appears → download → extract → launch
 4. If up to date → Brave opens immediately (no splash)
@@ -281,19 +224,6 @@ App\Brave\brave.exe                   ← Official Brave Nightly binary
 
 ---
 
-## 📋 What gets created at runtime (not in the repo)
-
-These folders are **gitignored** and created on your machine — **do not delete them** unless you want a fresh start:
-
-| Path | Purpose |
-|------|---------|
-| `App\Brave\` | Official Brave Nightly binaries (~230 MB) |
-| `Data\profile\` | Your bookmarks, passwords, extensions |
-| `Data\cache\` | Browser cache |
-| `tools\` | Local .NET SDK (only if you ran `build.ps1`) |
-
----
-
 ## ⚖️ Legal & disclaimer
 
 | Component | License / owner |
@@ -314,8 +244,3 @@ Consider starring the repo — it helps others find a clean portable Brave Night
 
 **Questions or bugs?** [Open an issue](https://github.com/AlexRabbit/Brave-Portable/issues)
 
----
-
-<p align="center">
-  <strong>🟢 Ready?</strong> Double-click <code>START-BRAVE-NIGHTLY.bat</code> and go.
-</p>
