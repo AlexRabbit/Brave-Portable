@@ -18,6 +18,13 @@ That’s it. No install. No admin. No registry junk on the host PC.
 
 **First launch?** The app downloads ~230 MB of **official Brave Nightly** from GitHub. Grab a coffee ☕ — it only happens once (then only small updates).
 
+> **Which `.exe` should I use?**  
+> **Neither directly.** Always use **`START-BRAVE-NIGHTLY.bat`**.  
+> If you must pick an exe: **`BraveNightlyPortable-AlexRabbit.exe`** (update + launch).  
+> Never double-click **`BraveNightlyPortable-Internal.exe`** — that’s the inner PA launcher only.
+
+**Cloned from GitHub?** The first `.bat` run builds the wrapper exe via `build.ps1` (~1 min), then downloads Brave Nightly.
+
 **Already have a Release zip?** Same thing — double-click the `.bat` inside the extracted folder.
 
 ---
