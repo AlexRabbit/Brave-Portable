@@ -20,10 +20,19 @@ desktop.ini
 *.user
 *.suo
 .vs/
+.idea/
 
 # Optional PA installer output (build locally, upload separately)
 *.paf.exe
 Output/
 
-# Wrapper is rebuilt by build.ps1 or CI — keep tracked copy at repo root
+# Temp / debug leftovers
+tmp-*
+*.bak
+
+# Cursor / editor workspace (local only)
+.cursor/
+assets/
+
+# Pre-built launcher is tracked at repo root for end users
 # BraveNightlyPortable-AlexRabbit.exe
