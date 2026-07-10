@@ -27,30 +27,55 @@ internal static class Program
             return 1;
         }
 
-        if (!EnsureBraveReady(root))
+        SplashForm? splash = null;
+        try
         {
-            MessageBox.Show(
-                "Could not download Brave Nightly from official GitHub.\n\n" +
-                "Check your internet connection and try again.\n" +
-                "Manual fix: run Other\\Source\\update.bat",
-                "Brave Nightly Portable", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            return 1;
+            var braveExe = Path.Combine(root, "App", "Brave", "brave.exe");
+            if (!File.Exists(braveExe))
+            {
+                splash = ShowSplash(
+                    "Setting up Brave Nightly",
+                    "Downloading official Brave Nightly from GitHub (~230 MB)...");
+            }
+
+            if (!EnsureBraveReady(root, splash))
+            {
+                MessageBox.Show(
+                    "Could not download Brave Nightly from official GitHub.\n\n" +
+                    "Check your internet connection and try again.\n" +
+                    "Manual fix: run Other\\Source\\update.bat",
+                    "Brave Nightly Portable", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return 1;
+            }
+
+            try { TryUpdate(root, forceIfMissing: false, ref splash); }
+            catch { /* launch existing version */ }
+
+            var internalLauncher = Path.Combine(root, "BraveNightlyPortable-Internal.exe");
+            if (!File.Exists(internalLauncher))
+            {
+                MessageBox.Show(
+                    $"Missing PA launcher:\n{internalLauncher}",
+                    "Brave Nightly Portable", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return 1;
+            }
+
+            Launch(root, internalLauncher, args);
+            return 0;
         }
-
-        // Silent update check when already installed
-        try { TryUpdate(root, forceIfMissing: false); } catch { /* launch existing version */ }
-
-        var internalLauncher = Path.Combine(root, "BraveNightlyPortable-Internal.exe");
-        if (!File.Exists(internalLauncher))
+        finally
         {
-            MessageBox.Show(
-                $"Missing PA launcher:\n{internalLauncher}",
-                "Brave Nightly Portable", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            return 1;
+            splash?.Close();
+            splash?.Dispose();
         }
+    }
 
-        Launch(root, internalLauncher, args);
-        return 0;
+    private static SplashForm ShowSplash(string title, string status)
+    {
+        var splash = new SplashForm(title, status);
+        splash.Show();
+        Application.DoEvents();
+        return splash;
     }
 
     private static string? FindPackageRoot()
@@ -69,28 +94,29 @@ internal static class Program
         return null;
     }
 
-    private static bool EnsureBraveReady(string root)
+    private static bool EnsureBraveReady(string root, SplashForm? splash)
     {
         var braveExe = Path.Combine(root, "App", "Brave", "brave.exe");
         if (File.Exists(braveExe)) return true;
 
         try
         {
-            if (TryUpdate(root, forceIfMissing: true)) return File.Exists(braveExe);
+            if (TryUpdate(root, forceIfMissing: true, ref splash)) return File.Exists(braveExe);
         }
         catch (Exception ex)
         {
             Debug.WriteLine(ex);
         }
 
-        // PowerShell fallback (same logic, official GitHub source)
+        splash?.SetStatus("Retrying with PowerShell updater...");
+
         try
         {
             var ps1 = Path.Combine(root, "Other", "Source", "Update-BraveNightly.ps1");
             if (File.Exists(ps1))
             {
                 var psi = new ProcessStartInfo("powershell.exe",
-                    $"-NoProfile -ExecutionPolicy Bypass -File \"{ps1}\" -Force")
+                    $"-NoProfile -ExecutionPolicy Bypass -File \"{ps1}\" -Force -Quiet")
                 {
                     UseShellExecute = false,
                     CreateNoWindow = true,
@@ -105,7 +131,7 @@ internal static class Program
         return File.Exists(braveExe);
     }
 
-    private static bool TryUpdate(string root, bool forceIfMissing)
+    private static bool TryUpdate(string root, bool forceIfMissing, ref SplashForm? splash)
     {
         var braveDir = Path.Combine(root, "App", "Brave");
         var braveExe = Path.Combine(braveDir, "brave.exe");
@@ -117,7 +143,12 @@ internal static class Program
             var latest = GetLatestNightlyRelease() ?? GetLatestNightlyFromHtml();
             if (latest is null) return true;
             if (current is not null && CompareVersion(current, latest.Version) >= 0) return true;
-            DownloadAndInstall(root, braveDir, latest);
+
+            splash ??= ShowSplash(
+                "Updating Brave Nightly",
+                $"Downloading Brave Nightly v{latest.Version}...");
+            splash.SetStatus($"Downloading Brave Nightly v{latest.Version} from GitHub...");
+            DownloadAndInstall(root, braveDir, latest, splash);
             return File.Exists(braveExe);
         }
 
@@ -125,7 +156,12 @@ internal static class Program
         {
             var latest = GetLatestNightlyRelease() ?? GetLatestNightlyFromHtml();
             if (latest is null) return false;
-            DownloadAndInstall(root, braveDir, latest);
+
+            splash ??= ShowSplash(
+                "Setting up Brave Nightly",
+                "Downloading official Brave Nightly from GitHub...");
+            splash.SetStatus($"Downloading Brave Nightly v{latest.Version} (~230 MB)...");
+            DownloadAndInstall(root, braveDir, latest, splash);
             return File.Exists(braveExe);
         }
 
@@ -179,7 +215,7 @@ internal static class Program
         return null;
     }
 
-    private static void DownloadAndInstall(string root, string braveDir, ReleaseInfo release)
+    private static void DownloadAndInstall(string root, string braveDir, ReleaseInfo release, SplashForm? splash)
     {
         Directory.CreateDirectory(braveDir);
         var zipPath = Path.Combine(Path.GetTempPath(), release.AssetName);
@@ -187,6 +223,7 @@ internal static class Program
 
         try
         {
+            splash?.SetStatus($"Downloading {release.AssetName}...");
             using var client = CreateClient();
             using (var response = client.GetAsync(release.DownloadUrl, HttpCompletionOption.ResponseHeadersRead).GetAwaiter().GetResult())
             {
@@ -195,6 +232,7 @@ internal static class Program
                 response.Content.CopyToAsync(fs).GetAwaiter().GetResult();
             }
 
+            splash?.SetStatus("Extracting Brave Nightly...");
             foreach (var proc in Process.GetProcessesByName("brave"))
             {
                 try { proc.Kill(); } catch { }
@@ -207,9 +245,11 @@ internal static class Program
             var extractedBrave = FindBraveExe(staging)
                 ?? throw new InvalidOperationException("Downloaded package missing brave.exe");
 
+            splash?.SetStatus("Verifying Nightly build...");
             VerifyNightlyBuild(extractedBrave);
             CopyDirectory(Path.GetDirectoryName(extractedBrave)!, braveDir);
             UpdateAppInfo(root, release.Version);
+            splash?.SetStatus("Brave Nightly ready.");
         }
         finally
         {

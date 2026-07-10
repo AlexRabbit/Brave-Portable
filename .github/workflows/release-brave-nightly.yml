@@ -79,10 +79,10 @@ jobs:
           body: |
             Official **Brave Nightly** portable (PA.c format).
 
-            Double-click **`BraveNightlyPortable-AlexRabbit.exe`** — only file you need.
+            Double-click **`START-BRAVE-NIGHTLY.bat`** — checks requirements, then opens Brave.
 
             - Source: [brave/brave-browser](https://github.com/brave/brave-browser/releases) Nightly zip
-            - Profile: `Data/profile/`
+            - Profile: `Data/profile/` (copy whole folder to move PCs)
             - Requires [.NET 8 Desktop Runtime](https://dotnet.microsoft.com/download/dotnet/8.0) (usually preinstalled on Win11)
           files: BraveNightlyPortable_${{ steps.brave.outputs.version }}_win64.zip
           prerelease: true

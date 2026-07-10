@@ -1,18 +1,29 @@
-# Build / local dev
+# Build / local dev (recreated by build.ps1)
 tools/
 wrapper/bin/
 wrapper/obj/
 wrapper/out/
 
-# Runtime (created on first launch)
+# Runtime — created on first launch (never publish to GitHub)
 Data/
 App/Brave/*
 !App/Brave/README.txt
 
-# OS
+# OS junk
 Thumbs.db
 desktop.ini
 *.log
+*.tmp
+*.cache
 
-# Wrapper rebuilt by build.ps1 or GitHub Actions (~1 MB, fits in git)
+# User-specific / machine-specific
+*.user
+*.suo
+.vs/
+
+# Optional PA installer output (build locally, upload separately)
+*.paf.exe
+Output/
+
+# Wrapper is rebuilt by build.ps1 or CI — keep tracked copy at repo root
 # BraveNightlyPortable-AlexRabbit.exe

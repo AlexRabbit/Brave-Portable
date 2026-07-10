@@ -1,10 +1,9 @@
 Brave Nightly Portable — Other\Source
 =====================================
 
-Manual update scripts live here.
+Manual maintenance scripts (optional — normal users use START-BRAVE-NIGHTLY.bat).
 
-  update.bat              — download latest Nightly from GitHub
-  update_then_run.bat     — update then open the wrapper exe
-  Update-BraveNightly.ps1 — PowerShell updater (same logic as wrapper)
+  update.bat              — download latest Nightly from official GitHub
+  Update-BraveNightly.ps1 — same logic as the wrapper (PowerShell)
 
-Normal users should use START-BRAVE-NIGHTLY.bat at the repository root instead.
+Use these only if the automatic launcher fails to update.
