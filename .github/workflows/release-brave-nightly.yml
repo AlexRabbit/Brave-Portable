@@ -1,0 +1,117 @@
+name: Release Brave Nightly Portable
+
+on:
+  schedule:
+    - cron: "0 */6 * * *"
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - "BraveNightlyPortable/**"
+      - "wrapper/**"
+      - ".github/workflows/**"
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-release:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "8.0.x"
+
+      - name: Resolve latest Brave Nightly from official GitHub
+        id: brave
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = "Stop"
+          $headers = @{ "User-Agent" = "BraveNightlyPortable-CI" }
+          $releases = Invoke-RestMethod -Uri "https://api.github.com/repos/brave/brave-browser/releases?per_page=100" -Headers $headers
+          $rel = $releases | Where-Object { $_.name -match "Nightly" } | Select-Object -First 1
+          if (-not $rel) { throw "No Nightly release found on brave/brave-browser" }
+          $asset = $rel.assets | Where-Object { $_.name -match "^brave-v.*-win32-x64\.zip$" } | Select-Object -First 1
+          if (-not $asset) { throw "No win32-x64 zip asset" }
+          $version = $rel.tag_name.TrimStart("v")
+          Write-Host "Official Nightly: $version ($($asset.name))"
+          "version=$version" >> $env:GITHUB_OUTPUT
+          "asset_url=$($asset.browser_download_url)" >> $env:GITHUB_OUTPUT
+          "asset_name=$($asset.name)" >> $env:GITHUB_OUTPUT
+
+      - name: Download and extract official Brave Nightly zip
+        shell: pwsh
+        run: |
+          $dest = "BraveNightlyPortable/App/Brave"
+          if (Test-Path $dest) { Remove-Item $dest -Recurse -Force }
+          New-Item -ItemType Directory -Path $dest -Force | Out-Null
+          Invoke-WebRequest -Uri "${{ steps.brave.outputs.asset_url }}" -OutFile brave.zip -Headers @{ "User-Agent" = "BraveNightlyPortable-CI" }
+          Expand-Archive brave.zip -DestinationPath $dest -Force
+          $exe = Join-Path $dest "brave.exe"
+          if (-not (Test-Path $exe)) {
+            $subdir = Get-ChildItem $dest -Directory | Where-Object { Test-Path (Join-Path $_.FullName "brave.exe") } | Select-Object -First 1
+            if ($subdir) {
+              Get-ChildItem $subdir.FullName | Move-Item -Destination $dest -Force
+              Remove-Item $subdir.FullName -Force
+            }
+          }
+          $info = (Get-Item $exe).VersionInfo
+          if ($info.ProductName -notmatch "Nightly") { throw "Downloaded build is not Nightly: $($info.ProductName)" }
+          Write-Host "Verified: $($info.ProductName) $($info.ProductVersion)"
+
+      - name: Bump appinfo.ini version
+        shell: pwsh
+        run: |
+          $v = "${{ steps.brave.outputs.version }}"
+          $parts = $v.Split(".")
+          $pkg = if ($parts.Count -ge 3) { "$($parts[0]).$($parts[1]).$($parts[2]).0" } else { "0.0.0.0" }
+          $ini = "BraveNightlyPortable/App/AppInfo/appinfo.ini"
+          (Get-Content $ini) `
+            -replace '^PackageVersion=.*', "PackageVersion=$pkg" `
+            -replace '^DisplayVersion=.*', "DisplayVersion=$v Nightly" |
+            Set-Content $ini -Encoding ASCII
+
+      - name: Build update-on-launch wrapper exe (self-contained)
+        run: |
+          dotnet publish wrapper/BraveNightlyPortable-AlexRabbit.csproj -c Release -r win-x64 --self-contained true -o wrapper/out
+
+      - name: Stage portable package
+        shell: pwsh
+        run: |
+          Copy-Item wrapper/out/BraveNightlyPortable-AlexRabbit.exe BraveNightlyPortable/BraveNightlyPortable-AlexRabbit.exe -Force
+          if (-not (Test-Path BraveNightlyPortable/BraveNightlyPortable-Internal.exe)) {
+            Write-Error "Missing BraveNightlyPortable-Internal.exe at package root (PA launcher)."
+          }
+
+      - name: Create portable zip release artifact
+        shell: pwsh
+        run: |
+          $ver = "${{ steps.brave.outputs.version }}"
+          $zip = "BraveNightlyPortable_${ver}_win64.zip"
+          Compress-Archive -Path BraveNightlyPortable/* -DestinationPath $zip -Force
+          "zip_name=$zip" >> $env:GITHUB_OUTPUT
+        id: pack
+
+      - name: Publish GitHub Release
+        uses: softprops/action-gh-release@v2
+        if: github.event_name != 'push' || github.ref == 'refs/heads/main'
+        with:
+          tag_name: nightly-v${{ steps.brave.outputs.version }}
+          name: Brave Nightly Portable v${{ steps.brave.outputs.version }}
+          body: |
+            Official **Brave Nightly** portable package (PA.c format).
+
+            - Source: [brave/brave-browser](https://github.com/brave/brave-browser/releases) Nightly win32-x64 zip
+            - Auto-updates on launch via wrapper exe
+            - Profile stored in `Data/profile`
+
+            Extract and run `BraveNightlyPortable-AlexRabbit.exe`.
+          files: BraveNightlyPortable_${{ steps.brave.outputs.version }}_win64.zip
+          draft: false
+          prerelease: true
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
