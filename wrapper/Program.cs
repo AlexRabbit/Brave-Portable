@@ -27,6 +27,39 @@ internal static class Program
             return 1;
         }
 
+        var wrapperExe = Environment.ProcessPath
+            ?? Path.Combine(root, "BraveNightlyPortable-AlexRabbit.exe");
+
+        // Default-browser registration (does not launch Brave)
+        if (HasFlag(args, "--register-default") || HasFlag(args, "--setdefault"))
+        {
+            DefaultBrowser.Register(wrapperExe);
+            DefaultBrowser.OpenWindowsDefaultAppsSettings();
+            MessageBox.Show(
+                "Registered as a browser: Brave Nightly Portable (AlexRabbit)\n\n" +
+                "Windows Settings → Default apps → set:\n" +
+                "  • Web browser → Brave Nightly Portable (AlexRabbit)\n" +
+                "  • HTTP / HTTPS → Brave Nightly Portable (AlexRabbit)\n\n" +
+                "Do NOT click “Set as default” inside Brave Settings — that points at brave.exe and opens a second browser.",
+                "Brave Nightly Portable — AlexRabbit",
+                MessageBoxButtons.OK, MessageBoxIcon.Information);
+            return 0;
+        }
+
+        if (HasFlag(args, "--unregister-default"))
+        {
+            DefaultBrowser.Unregister();
+            MessageBox.Show(
+                "Removed Brave Nightly Portable (AlexRabbit) from the Windows browser list.",
+                "Brave Nightly Portable — AlexRabbit",
+                MessageBoxButtons.OK, MessageBoxIcon.Information);
+            return 0;
+        }
+
+        var launchArgs = StripFlags(args,
+            "--register-default", "--unregister-default", "--setdefault");
+        var isUrlLaunch = launchArgs.Any(IsUrlOrHtmlFile);
+
         SplashForm? splash = null;
         try
         {
@@ -48,8 +81,15 @@ internal static class Program
                 return 1;
             }
 
-            try { TryUpdate(root, forceIfMissing: false, ref splash); }
-            catch { /* launch existing version */ }
+            // Keep default-browser handoff fast: skip update check when opening a link
+            if (!isUrlLaunch)
+            {
+                try { TryUpdate(root, forceIfMissing: false, ref splash); }
+                catch { /* launch existing version */ }
+
+                // Stay listed in Windows Default apps (points at this wrapper, not brave.exe)
+                try { DefaultBrowser.Register(wrapperExe); } catch { /* non-fatal */ }
+            }
 
             var internalLauncher = Path.Combine(root, "BraveNightlyPortable-Internal.exe");
             if (!File.Exists(internalLauncher))
@@ -60,7 +100,7 @@ internal static class Program
                 return 1;
             }
 
-            Launch(root, internalLauncher, args);
+            Launch(root, internalLauncher, launchArgs);
             return 0;
         }
         finally
@@ -68,6 +108,22 @@ internal static class Program
             splash?.Close();
             splash?.Dispose();
         }
+    }
+
+    private static bool HasFlag(string[] args, string flag) =>
+        args.Any(a => string.Equals(a, flag, StringComparison.OrdinalIgnoreCase));
+
+    private static string[] StripFlags(string[] args, params string[] flags) =>
+        args.Where(a => !flags.Any(f => string.Equals(a, f, StringComparison.OrdinalIgnoreCase))).ToArray();
+
+    private static bool IsUrlOrHtmlFile(string arg)
+    {
+        if (string.IsNullOrWhiteSpace(arg)) return false;
+        if (arg.StartsWith("http://", StringComparison.OrdinalIgnoreCase)) return true;
+        if (arg.StartsWith("https://", StringComparison.OrdinalIgnoreCase)) return true;
+        if (arg.StartsWith("file://", StringComparison.OrdinalIgnoreCase)) return true;
+        var ext = Path.GetExtension(arg.Trim('"'));
+        return ext is ".htm" or ".html" or ".shtml" or ".xhtml" or ".xht";
     }
 
     private static SplashForm ShowSplash(string title, string status)

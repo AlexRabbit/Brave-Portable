@@ -17,7 +17,8 @@ BraveNightlyPortable-AlexRabbit.exe
 
 **That is the entire app.**  
 Download → extract anywhere → **double-click `BraveNightlyPortable-AlexRabbit.exe`**.  
-No installer. No admin. No registry changes.
+No installer. No admin for normal use.  
+(Optional: register as default browser — see below.)
 
 | Step | What you do | What happens |
 |:----:|-------------|--------------|
@@ -26,6 +27,40 @@ No installer. No admin. No registry changes.
 | **3** | Done | Brave opens — your profile lives in `Data\profile\` |
 
 > 🧠 **Tip:** Pin `BraveNightlyPortable-AlexRabbit.exe` to your taskbar or desktop. Always launch through this file — it handles download, update, and portable paths automatically.
+
+---
+
+## 🌐 Set as your default browser
+
+Windows keeps trying to use **`App\Brave\brave.exe`** when you click “Set as default” **inside Brave**. That opens a **second Brave** with a different profile.
+
+**Use the AlexRabbit wrapper instead** — one command:
+
+```
+BraveNightlyPortable-AlexRabbit.exe --register-default
+```
+
+Or double-click:
+
+```
+Other\Source\Set-As-Default-Browser.bat
+```
+
+Then in **Windows Settings → Apps → Default apps**:
+
+1. Find **Brave Nightly Portable (AlexRabbit)**
+2. Set it as default for **Web browser**, **HTTP**, and **HTTPS**
+
+| Do this ✅ | Don't do this ❌ |
+|-----------|------------------|
+| Set default via `--register-default` + Windows Settings | Click “Set as default” inside Brave Settings |
+| Always open **`BraveNightlyPortable-AlexRabbit.exe`** | Open `App\Brave\brave.exe` directly |
+
+To remove the registration later:
+
+```
+BraveNightlyPortable-AlexRabbit.exe --unregister-default
+```
 
 ---
 
@@ -47,9 +82,11 @@ The splash **only** appears when something is being **downloaded or set up** —
 ### Option A — GitHub Release zip (easiest)
 
 1. Open **[Releases](https://github.com/AlexRabbit/Brave-Portable/releases)**
-2. Download the latest `BraveNightlyPortable_X.Y.Z_win64.zip`
-3. Extract to any folder (USB, `D:\Apps\`, Desktop — your choice)
-4. **Double-click `BraveNightlyPortable-AlexRabbit.exe`**
+2. Download `BraveNightlyPortable_X.Y.Z_win64.zip`
+3. Extract — you get a ready folder named **`BraveNightlyPortable\`**
+4. Inside that folder, **double-click `BraveNightlyPortable-AlexRabbit.exe`**
+
+> The Release zip already includes official Brave Nightly binaries when built by CI — first launch is instant.
 
 ### Option B — Clone the repository
 
@@ -98,6 +135,7 @@ Brave-Portable/
 │   └── cache/                       ← Browser cache
 │
 ├── Other/Source/
+│   ├── Set-As-Default-Browser.bat   ← Register as Windows default browser
 │   ├── update.bat                   ← Manual update fallback (advanced)
 │   └── Update-BraveNightly.ps1      ← Same logic, PowerShell
 │

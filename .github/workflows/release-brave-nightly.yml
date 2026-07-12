@@ -73,28 +73,65 @@ jobs:
       - name: Build launcher exe (~1 MB)
         run: dotnet publish wrapper/BraveNightlyPortable-AlexRabbit.csproj -c Release -r win-x64 --self-contained false -o wrapper/out
 
-      - name: Stage package
+      - name: Stage ready-to-use Release zip
         shell: pwsh
         run: |
           Copy-Item wrapper/out/BraveNightlyPortable-AlexRabbit.exe . -Force
           if (-not (Test-Path BraveNightlyPortable-Internal.exe)) {
             throw "Missing BraveNightlyPortable-Internal.exe at package root"
           }
-          $exclude = @('.git', 'wrapper', 'tools', 'Data')
-          Get-ChildItem -Force | Where-Object { $exclude -notcontains $_.Name } | Compress-Archive -DestinationPath "BraveNightlyPortable_${{ steps.brave.outputs.version }}_win64.zip" -Force
+
+          $version = "${{ steps.brave.outputs.version }}"
+          $stageRoot = "release-stage"
+          $folderName = "BraveNightlyPortable"
+          $stage = Join-Path $stageRoot $folderName
+          Remove-Item $stageRoot -Recurse -Force -ErrorAction SilentlyContinue
+          New-Item -ItemType Directory -Path $stage -Force | Out-Null
+
+          # Ready folder for end users — extract zip and double-click the AlexRabbit exe
+          $copy = @(
+            "BraveNightlyPortable-AlexRabbit.exe",
+            "BraveNightlyPortable-Internal.exe",
+            "README.md",
+            "LICENSE",
+            "App",
+            "Other",
+            "docs"
+          )
+          foreach ($item in $copy) {
+            if (-not (Test-Path $item)) { throw "Missing package item: $item" }
+            Copy-Item $item $stage -Recurse -Force
+          }
+
+          $zipName = "BraveNightlyPortable_${version}_win64.zip"
+          if (Test-Path $zipName) { Remove-Item $zipName -Force }
+          Compress-Archive -Path $stage -DestinationPath $zipName -Force
+          Write-Host "Created $zipName (ready folder: $folderName/)"
 
       - uses: softprops/action-gh-release@v2
         with:
           tag_name: nightly-v${{ steps.brave.outputs.version }}
           name: Brave Nightly Portable v${{ steps.brave.outputs.version }}
           body: |
-            Official **Brave Nightly** portable (PA.c format).
+            ## Brave Nightly Portable — by AlexRabbit
 
-            Double-click **`BraveNightlyPortable-AlexRabbit.exe`** — downloads if needed, then opens Brave.
+            Ready-to-use folder. Download the zip → extract → double-click:
 
-            - Source: [brave/brave-browser](https://github.com/brave/brave-browser/releases) Nightly zip
-            - Profile: `Data/profile/` (copy whole folder to move PCs)
+            **`BraveNightlyPortable-AlexRabbit.exe`**
+
+            ### Set as your default browser
+            Run once:
+            ```
+            BraveNightlyPortable-AlexRabbit.exe --register-default
+            ```
+            Then in Windows Settings → Default apps, choose **Brave Nightly Portable (AlexRabbit)**.
+            Do **not** use “Set as default” inside Brave Settings (that opens a second non-portable Brave).
+
+            - Official Nightly from [brave/brave-browser](https://github.com/brave/brave-browser/releases)
+            - Profile: `Data/profile/` (copy the whole folder to move PCs)
             - Requires [.NET 8 Desktop Runtime](https://dotnet.microsoft.com/download/dotnet/8.0) (usually preinstalled on Win11)
+
+            Maintained by [AlexRabbit](https://github.com/AlexRabbit).
           files: BraveNightlyPortable_${{ steps.brave.outputs.version }}_win64.zip
           prerelease: true
         env:

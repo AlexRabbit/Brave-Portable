@@ -1,9 +1,13 @@
 Brave Nightly Portable — Other\Source
 =====================================
 
-Manual maintenance scripts (optional — normal users launch BraveNightlyPortable-AlexRabbit.exe).
+Manual helpers (normal users launch BraveNightlyPortable-AlexRabbit.exe).
 
-  update.bat              — download latest Nightly from official GitHub
-  Update-BraveNightly.ps1 — same logic as the wrapper (PowerShell)
+  Set-As-Default-Browser.bat — register the AlexRabbit wrapper as Windows default browser
+  update.bat                 — download latest Nightly from official GitHub
+  Update-BraveNightly.ps1    — same update logic as the wrapper (PowerShell)
 
-Use these only if the automatic launcher fails to update.
+Default browser tip:
+  Do NOT set default inside Brave Settings (that uses brave.exe → second browser).
+  Use Set-As-Default-Browser.bat or:
+    BraveNightlyPortable-AlexRabbit.exe --register-default
