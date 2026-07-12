@@ -12,7 +12,7 @@ Before building the installer:
 
 | # | Requirement | Notes |
 |---|-------------|-------|
-| 1 | **Working portable folder** | Run `START-BRAVE-NIGHTLY.bat` once so `App\Brave\brave.exe` exists |
+| 1 | **Working portable folder** | Run `BraveNightlyPortable-AlexRabbit.exe` once so `App\Brave\brave.exe` exists |
 | 2 | **PortableApps.com Launcher** | Already included as `BraveNightlyPortable-Internal.exe` |
 | 3 | **PA Installer Generator** | Download from [portableapps.com/development](https://portableapps.com/development) |
 | 4 | **App icon** | Optional but recommended — `App\AppInfo\appicon.ico` (128×128 or multi-size `.ico`) |
@@ -31,7 +31,7 @@ After first successful launch:
 
 ```powershell
 cd path\to\Brave-Portable
-START-BRAVE-NIGHTLY.bat
+.\BraveNightlyPortable-AlexRabbit.exe
 ```
 
 Wait until Brave opens (confirms `App\Brave\` is populated).
@@ -46,12 +46,11 @@ Your folder should contain at minimum:
 
 ```
 BraveNightlyPortable/
-├── START-BRAVE-NIGHTLY.bat
 ├── BraveNightlyPortable-AlexRabbit.exe
 ├── BraveNightlyPortable-Internal.exe
 ├── App/  (with Brave binaries + AppInfo)
 ├── Other/
-├── help.html
+├── README.md
 └── ...
 ```
 
@@ -69,7 +68,7 @@ BraveNightlyPortable/
 | Field | Expected value |
 |-------|----------------|
 | AppId | `BraveNightlyPortable-AlexRabbit` |
-| Start | `START-BRAVE-NIGHTLY.bat` |
+| Start | `BraveNightlyPortable-AlexRabbit.exe` |
 | 64-bit | Yes |
 | Admin required | No |
 

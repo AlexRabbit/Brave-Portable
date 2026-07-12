@@ -1,7 +1,7 @@
 Brave Nightly Portable — Other\Source
 =====================================
 
-Manual maintenance scripts (optional — normal users use START-BRAVE-NIGHTLY.bat).
+Manual maintenance scripts (optional — normal users launch BraveNightlyPortable-AlexRabbit.exe).
 
   update.bat              — download latest Nightly from official GitHub
   Update-BraveNightly.ps1 — same logic as the wrapper (PowerShell)

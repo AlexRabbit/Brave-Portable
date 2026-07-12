@@ -90,7 +90,7 @@ jobs:
           body: |
             Official **Brave Nightly** portable (PA.c format).
 
-            Double-click **`START-BRAVE-NIGHTLY.bat`** — checks requirements, then opens Brave.
+            Double-click **`BraveNightlyPortable-AlexRabbit.exe`** — downloads if needed, then opens Brave.
 
             - Source: [brave/brave-browser](https://github.com/brave/brave-browser/releases) Nightly zip
             - Profile: `Data/profile/` (copy whole folder to move PCs)
