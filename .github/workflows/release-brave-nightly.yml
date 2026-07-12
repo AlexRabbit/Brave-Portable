@@ -108,7 +108,7 @@ jobs:
           Compress-Archive -Path $stage -DestinationPath $zipName -Force
           Write-Host "Created $zipName (ready folder: $folderName/)"
 
-      - uses: softprops/action-gh-release@v2
+      - uses: softprops/action-gh-release@v3
         with:
           tag_name: nightly-v${{ steps.brave.outputs.version }}
           name: Brave Nightly Portable v${{ steps.brave.outputs.version }}
