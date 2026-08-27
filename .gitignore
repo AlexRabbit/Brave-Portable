@@ -30,7 +30,7 @@ Output/
 tmp-*
 *.bak
 
-# Cursor / editor workspace (local only)
+# Editor workspace (local only)
 .cursor/
 assets/
 
