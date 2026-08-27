@@ -28,18 +28,6 @@ BraveNightlyPortable-AlexRabbit.exe
 
 ---
 
-## 🎬 What you see when launching
-
-| Situation | Splash? | What you see |
-|-----------|:-------:|--------------|
-| Normal day — Brave installed, up to date | ❌ | Brave opens in seconds |
-| **First run** — no browser files yet | ✅ | *"Downloading official Brave Nightly from GitHub…"* |
-| **Update available** — newer Nightly on GitHub | ✅ | *"Downloading Brave Nightly vX.Y.Z…"* |
-| Missing **.NET 8 Desktop Runtime** | ❌ | Windows runtime error — install .NET 8 (see Requirements) |
-
-The splash **only** appears when something is being downloaded or set up. Everyday launches are instant.
-
----
 
 ## 📥 How to get this project
 
@@ -67,48 +55,6 @@ First run downloads Brave (~230 MB) because the source repo ships without browse
 1. Install the [PortableApps.com Platform](https://portableapps.com/download)
 2. Copy this folder to `PortableApps\BraveNightlyPortable\`
 3. Launch **`BraveNightlyPortable-AlexRabbit.exe`** from the PA menu
-
----
-
-## ✅ Requirements
-
-| Requirement | Who needs it | Details |
-|-------------|--------------|---------|
-| **Windows 10 or 11 (64-bit)** | Everyone | 32-bit Windows is not supported |
-| **Internet** | First run + updates | Downloads from official GitHub only |
-| **[.NET 8 Desktop Runtime (x64)](https://dotnet.microsoft.com/download/dotnet/8.0)** | Launcher only | ~50 MB one-time; Brave itself does **not** need .NET |
-| **~250 MB free disk** | First run | For Brave Nightly browser files |
-
-> 💡 Windows 11 usually has .NET 8 already. On Windows 10, install the **Desktop Runtime** — not SDK, not ASP.NET.
-
----
-
-## 🗂️ Folder map
-
-```
-Brave-Portable/
-│
-├── BraveNightlyPortable-AlexRabbit.exe   ← 🟢 START HERE (AlexRabbit launcher)
-├── BraveNightlyPortable-Internal.exe     ← PortableApps engine (do not run directly)
-│
-├── App/
-│   ├── Brave/         ← Official Brave Nightly (empty in source repo until first run)
-│   └── AppInfo/       ← PortableApps metadata, icons, launcher config
-│
-├── Data/              ← Created on first run — YOUR profile
-│   ├── profile/       ← Bookmarks, passwords, extensions, settings
-│   └── cache/         ← Browser cache
-│
-├── Other/Source/
-│   ├── Set-As-Default-Browser.bat   ← Register wrapper as Windows default browser
-│   ├── update.bat                   ← Manual update (advanced fallback)
-│   └── Update-BraveNightly.ps1      ← Same update logic in PowerShell
-│
-├── wrapper/           ← C# source (developers rebuild launcher here)
-├── build.ps1          ← Rebuild BraveNightlyPortable-AlexRabbit.exe
-├── docs/              ← PortableApps submission guide + upload checklist
-└── README.md          ← You are here
-```
 
 ---
 
@@ -145,15 +91,6 @@ Remove registration later: `BraveNightlyPortable-AlexRabbit.exe --unregister-def
 
 AlexRabbit's wrapper **does not modify** Brave binaries. It downloads, verifies, and runs them in portable mode.
 
----
-
-## 💾 Moving to another computer
-
-1. **Close Brave** completely (check system tray)
-2. Copy the **entire folder** — USB, cloud zip, external SSD
-3. On the new PC, **double-click `BraveNightlyPortable-AlexRabbit.exe`**
-
-> ⚠️ Copy the **whole folder**, not just `brave.exe`. Your **profile in `Data\` is what matters**. If `App\Brave\` is empty on the new PC, the launcher re-downloads Brave automatically.
 
 ---
 
@@ -167,128 +104,7 @@ Every time you launch **`BraveNightlyPortable-AlexRabbit.exe`**:
 
 **Manual fallback (advanced):** run `Other\Source\update.bat`, then launch the AlexRabbit exe again.
 
----
 
-## 🛠️ Troubleshooting
-
-<details>
-<summary><strong>❌ "Could not download Brave Nightly from official GitHub"</strong></summary>
-
-**Cause:** No internet, GitHub rate limit, or newest Nightly tag has no Windows zip yet.
-
-1. Check internet connection
-2. Run `Other\Source\update.bat` and wait for completion
-3. Wait 10 minutes if rate-limited, then retry
-4. **Double-click `BraveNightlyPortable-AlexRabbit.exe`** again
-
-</details>
-
-<details>
-<summary><strong>❌ App won't start / ".NET Desktop Runtime" error</strong></summary>
-
-Install **[.NET Desktop Runtime 8.x (x64)](https://dotnet.microsoft.com/download/dotnet/8.0)** — Desktop Runtime only, not SDK or ASP.NET. Then launch the AlexRabbit exe again.
-
-</details>
-
-<details>
-<summary><strong>❌ "App\Brave\brave.exe could not be found"</strong></summary>
-
-Brave was not downloaded yet or download failed.
-
-1. Run `Other\Source\update.bat`
-2. **Double-click `BraveNightlyPortable-AlexRabbit.exe`**
-
-</details>
-
-<details>
-<summary><strong>❌ GitHub API rate limit (403)</strong></summary>
-
-Launcher falls back to HTML parsing automatically. If both fail, wait 10 minutes or run `Other\Source\update.bat`.
-
-</details>
-
-<details>
-<summary><strong>❌ Second Brave window / wrong profile</strong></summary>
-
-You likely set default via Brave Settings instead of the AlexRabbit wrapper. Run `--register-default` and set default in Windows Settings to **Brave Nightly Portable (AlexRabbit)**.
-
-</details>
-
-<details>
-<summary><strong>🐌 Download slow or stuck</strong></summary>
-
-- First download is **~230 MB** — allow 1–5 minutes
-- Corporate firewalls may block GitHub — try another network
-- Run `Other\Source\update.bat` for console progress output
-
-</details>
-
-<details>
-<summary><strong>🧹 Reset profile (fresh start)</strong></summary>
-
-1. Close Brave completely
-2. Delete `Data\profile\` and `Data\cache\`
-3. **Double-click `BraveNightlyPortable-AlexRabbit.exe`**
-
-</details>
-
-<details>
-<summary><strong>🔐 SmartScreen / "Windows protected your PC"</strong></summary>
-
-Unsigned community wrapper by AlexRabbit. Click **More info → Run anyway**, or rebuild with `build.ps1` from source if you prefer.
-
-</details>
-
----
-
-## 👨‍💻 For developers
-
-### Rebuild the launcher
-
-```powershell
-.\build.ps1
-```
-
-Installs .NET 8 SDK locally to `tools\` (gitignored), publishes `BraveNightlyPortable-AlexRabbit.exe` to repo root.
-
-### Architecture
-
-```
-BraveNightlyPortable-AlexRabbit.exe   ← AlexRabbit C# wrapper: download, verify, default-browser registration
-        │
-        ▼
-BraveNightlyPortable-Internal.exe     ← PortableApps engine: portable paths, profile in Data\
-        │
-        ▼
-App\Brave\brave.exe                   ← Official Brave Nightly binary (unchanged)
-```
-
-### CI / auto-releases
-
-[`.github/workflows/release-brave-nightly.yml`](.github/workflows/release-brave-nightly.yml) runs every **6 hours** + manual trigger. Produces `BraveNightlyPortable_X.Y.Z_win64.zip` with a ready `BraveNightlyPortable\` folder.
-
----
-
-## 📦 PortableApps.com — `.paf.exe` & submission
-
-| Goal | Need `.paf.exe`? |
-|------|:----------------:|
-| USB / personal portable use | ❌ |
-| PA Platform menu | ❌ |
-| Official PA.com directory | ✅ |
-
-**Full guide:** [docs/PORTABLEAPPS-SUBMISSION.md](docs/PORTABLEAPPS-SUBMISSION.md)
-
----
-
-## 📋 Runtime folders (not in source repo)
-
-| Path | Purpose |
-|------|---------|
-| `App\Brave\` | Official Brave Nightly binaries (~230 MB) |
-| `Data\profile\` | Your bookmarks, passwords, extensions |
-| `Data\cache\` | Browser cache |
-| `tools\` | Local .NET SDK (only after running `build.ps1`) |
 
 ---
 
@@ -303,16 +119,6 @@ App\Brave\brave.exe                   ← Official Brave Nightly binary (unchang
 **Unofficial project by AlexRabbit.** Not affiliated with, endorsed by, or sponsored by Brave Software or PortableApps.com.
 
 **Nightly channel** = bleeding edge — may crash. Use [Stable Brave](https://brave.com/download/) for daily critical work.
-
----
-
-## ⭐ Support this project
-
-Star the repo — it helps others find a clean portable Brave Nightly setup.
-
-**Questions or bugs?** [Open an issue](https://github.com/AlexRabbit/Brave-Portable/issues)
-
-**Publishing this repo?** See [docs/UPLOAD-CHECKLIST.md](docs/UPLOAD-CHECKLIST.md)
 
 ---
 
